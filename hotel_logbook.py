@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from datetime import datetime, time
+from datetime import datetime
 from zoneinfo import ZoneInfo
 from supabase import create_client, Client
 import os
@@ -27,6 +27,17 @@ TIMEZONE = get_timezone()
 
 def get_local_now():
     return datetime.now(ZoneInfo(TIMEZONE))
+
+# ============================================================
+# FECHA EN ESPAÑOL
+# ============================================================
+MESES_ES = [
+    "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+    "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+]
+
+def fecha_español(dt):
+    return f"{MESES_ES[dt.month - 1]} {dt.day}, {dt.year}"
 
 # ============================================================
 # CSS
@@ -279,6 +290,7 @@ with sidebar_col:
         </div>
         """, unsafe_allow_html=True)
 
+    # Footer + Logo
     st.markdown("""
     <div style="margin-top:2rem;">
         <hr style="border-color:#1e2a38; margin-bottom:0.5rem;">
@@ -289,10 +301,24 @@ with sidebar_col:
     </div>
     """, unsafe_allow_html=True)
 
+    # Logo debajo del footer
+    try:
+        st.image("LogoWayne.png", width=80, use_container_width=False)
+    except Exception:
+        st.caption("LogoWayne.png not found", help="Place LogoWayne.png in the same folder as this script")
+
 # ============================================================
 # CONTENIDO PRINCIPAL
 # ============================================================
 with main_col:
+
+    # Fecha en español, alineada a la derecha, color cyan
+    fecha_hoy = fecha_español(get_local_now())
+    st.markdown(f"""
+    <div style="text-align:right; margin-bottom:0.5rem;">
+        <span style="color:#00d4d4; font-weight:700; font-size:0.95rem;">{fecha_hoy}</span>
+    </div>
+    """, unsafe_allow_html=True)
 
     # ==================== NEW LOG ====================
     if st.session_state.page == "new_log":
@@ -307,7 +333,6 @@ with main_col:
         operators = get_operators()
         request_types = get_request_types()
 
-        # HORA ACTUAL LOCAL (se recalcula en cada carga)
         now_local = get_local_now()
         current_date = now_local.date()
         current_time = now_local.time()
@@ -319,7 +344,6 @@ with main_col:
         </div>
         """, unsafe_allow_html=True)
 
-        # Indicador de hora actual — se muestra como texto, sin parpadeo
         st.markdown(f"""
         <div style="display:flex; align-items:center; gap:6px; margin-bottom:0.8rem;">
             <span style="color:#5a6b7d; font-size:0.85rem;">⏰ Current local time:</span>
@@ -332,8 +356,6 @@ with main_col:
         with c1:
             d = st.date_input("Date", value=current_date, key="d1")
         with c2:
-            # Time_input con key estático — NO se actualiza dinámicamente (evita parpadeo)
-            # Pero al hacer Save, se usa la hora real del sistema
             t = st.time_input("Time", value=current_time, key="t1")
 
         c3, c4 = st.columns(2)
@@ -349,7 +371,6 @@ with main_col:
             if not room.strip():
                 st.error("⚠️ Please enter a room number.")
             else:
-                # Al guardar, usar la hora EXACTA del instante del clic
                 save_now = get_local_now()
                 if save_request(save_now.date(), save_now.time(), room.strip(), op, rt, notes):
                     st.success("✅ Saved!")
