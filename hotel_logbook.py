@@ -28,12 +28,6 @@ TIMEZONE = get_timezone()
 def get_local_now():
     return datetime.now(ZoneInfo(TIMEZONE))
 
-def get_local_time():
-    return get_local_now().time()
-
-def get_local_date():
-    return get_local_now().date()
-
 # ============================================================
 # CSS
 # ============================================================
@@ -223,17 +217,8 @@ def del_req_type(name):
 if "page" not in st.session_state:
     st.session_state.page = "new_log"
 
-# Contador para forzar refresh del time_input
-if "time_counter" not in st.session_state:
-    st.session_state.time_counter = 0
-
 def nav_to(page):
     st.session_state.page = page
-    st.rerun()
-
-def refresh_time():
-    """Callback: actualiza hora y fuerza rerun para que el time_input se recree."""
-    st.session_state.time_counter += 1
     st.rerun()
 
 def get_stats(data):
@@ -294,7 +279,6 @@ with sidebar_col:
         </div>
         """, unsafe_allow_html=True)
 
-    # Footer en cyan brillante
     st.markdown("""
     <div style="margin-top:2rem;">
         <hr style="border-color:#1e2a38; margin-bottom:0.5rem;">
@@ -323,10 +307,11 @@ with main_col:
         operators = get_operators()
         request_types = get_request_types()
 
-        # HORA Y FECHA ACTUALES (se recalculan en cada rerun)
+        # HORA ACTUAL LOCAL (se recalcula en cada carga)
         now_local = get_local_now()
         current_date = now_local.date()
         current_time = now_local.time()
+        time_str = now_local.strftime("%I:%M %p")
 
         st.markdown("""
         <div style="background:#151c24; border:1px solid #1e2a38; border-radius:12px; padding:1.5rem 2rem;">
@@ -334,43 +319,37 @@ with main_col:
         </div>
         """, unsafe_allow_html=True)
 
+        # Indicador de hora actual — se muestra como texto, sin parpadeo
+        st.markdown(f"""
+        <div style="display:flex; align-items:center; gap:6px; margin-bottom:0.8rem;">
+            <span style="color:#5a6b7d; font-size:0.85rem;">⏰ Current local time:</span>
+            <span style="color:#00d4d4; font-weight:700; font-size:0.9rem;">{time_str}</span>
+            <span style="color:#5a6b7d; font-size:0.75rem;">(auto-updates on Save)</span>
+        </div>
+        """, unsafe_allow_html=True)
+
         c1, c2 = st.columns(2)
         with c1:
             d = st.date_input("Date", value=current_date, key="d1")
         with c2:
-            # Key dinámico basado en counter para forzar recreación del widget
-            t = st.time_input(
-                "Time", 
-                value=current_time, 
-                key=f"t1_{st.session_state.time_counter}"
-            )
+            # Time_input con key estático — NO se actualiza dinámicamente (evita parpadeo)
+            # Pero al hacer Save, se usa la hora real del sistema
+            t = st.time_input("Time", value=current_time, key="t1")
 
         c3, c4 = st.columns(2)
         with c3:
-            room = st.text_input(
-                "Room #", 
-                placeholder="e.g. 538", 
-                key="r1",
-                on_change=refresh_time
-            )
+            room = st.text_input("Room #", placeholder="e.g. 538", key="r1")
         with c4:
             op = st.selectbox("Operator", options=operators, key="o1")
 
         rt = st.selectbox("Request Type", options=request_types, key="rt1")
-
-        notes = st.text_area(
-            "Notes (optional)", 
-            placeholder="Additional details...", 
-            height=100, 
-            key="n1",
-            on_change=refresh_time
-        )
+        notes = st.text_area("Notes (optional)", placeholder="Additional details...", height=100, key="n1")
 
         if st.button("Save Request", type="primary", use_container_width=True, key="save1"):
             if not room.strip():
                 st.error("⚠️ Please enter a room number.")
             else:
-                # Al guardar, usar la hora EXACTA del sistema en este instante
+                # Al guardar, usar la hora EXACTA del instante del clic
                 save_now = get_local_now()
                 if save_request(save_now.date(), save_now.time(), room.strip(), op, rt, notes):
                     st.success("✅ Saved!")
