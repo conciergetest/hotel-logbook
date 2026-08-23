@@ -11,124 +11,269 @@ st.set_page_config(
     page_title="Hotel Logbook",
     page_icon="📞",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="expanded",
+    menu_items=None
 )
 
 # ============================================================
-# CSS PERSONALIZADO - DARK THEME WALDORF ASTORIA STYLE
+# CSS ULTRA-ROBUSTO PARA STREAMLIT CLOUD
 # ============================================================
-st.markdown("""
-<style>
-    :root {
-        --bg-primary: #0b0f14;
-        --bg-secondary: #111820;
-        --bg-card: #151c24;
-        --bg-input: #1a2330;
-        --border-color: #1e2a38;
-        --accent: #00d4d4;
-        --accent-hover: #00bbbb;
-        --text-primary: #e8ecf1;
-        --text-secondary: #8b9aae;
-        --text-muted: #5a6b7d;
-        --danger: #ff4757;
-        --success: #2ed573;
-    }
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-    html, body, [class*="css"] { font-family: 'Inter', sans-serif !important; }
-    .stApp { background-color: var(--bg-primary) !important; }
-    [data-testid="stSidebar"] {
-        background-color: var(--bg-secondary) !important;
-        border-right: 1px solid var(--border-color);
-    }
-    [data-testid="stSidebar"] .stButton > button {
-        width: 100%; text-align: left; background: transparent; border: none;
-        color: var(--text-secondary); font-size: 0.95rem; padding: 0.6rem 1rem;
-        border-radius: 8px; transition: all 0.2s ease; margin-bottom: 0.3rem;
-    }
-    [data-testid="stSidebar"] .stButton > button:hover {
-        background: rgba(0, 212, 212, 0.08); color: var(--text-primary);
-    }
-    [data-testid="stSidebar"] .stButton > button[kind="primary"] {
-        background: var(--accent) !important; color: #000 !important; font-weight: 600;
-    }
-    [data-testid="stSidebar"] .stButton > button[kind="primary"]:hover {
-        background: var(--accent-hover) !important;
-    }
-    h1, h2, h3, h4, h5, h6 { color: var(--text-primary) !important; font-weight: 600 !important; }
-    p, span, label { color: var(--text-secondary) !important; }
-    [data-testid="stTextInput"] input,
-    [data-testid="stTextArea"] textarea,
-    [data-testid="stNumberInput"] input,
-    [data-testid="stDateInput"] input,
-    [data-testid="stTimeInput"] input,
-    .stSelectbox > div > div {
-        background-color: var(--bg-input) !important; border: 1px solid var(--border-color) !important;
-        border-radius: 8px !important; color: var(--text-primary) !important;
-        padding: 0.6rem 0.8rem !important;
-    }
-    [data-testid="stTextInput"] input:focus,
-    [data-testid="stTextArea"] textarea:focus {
-        border-color: var(--accent) !important;
-        box-shadow: 0 0 0 2px rgba(0, 212, 212, 0.15) !important;
-    }
-    .stButton > button[kind="primary"] {
-        background: var(--accent) !important; color: #000 !important; border: none !important;
-        border-radius: 8px !important; padding: 0.75rem 1.5rem !important;
-        font-weight: 600 !important; font-size: 1rem !important; transition: all 0.2s ease !important;
-    }
-    .stButton > button[kind="primary"]:hover { background: var(--accent-hover) !important; transform: translateY(-1px); }
-    [data-testid="stVerticalBlock"] > [style*="flex-direction: column"] {
-        background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border-color); padding: 1.5rem;
-    }
-    .stDataFrame {
-        background: var(--bg-card) !important; border-radius: 12px !important;
-        border: 1px solid var(--border-color) !important;
-    }
-    .stDataFrame th {
-        background: var(--bg-secondary) !important; color: var(--text-primary) !important;
-        font-weight: 600 !important; border-bottom: 1px solid var(--border-color) !important;
-    }
-    .stDataFrame td { color: var(--text-secondary) !important; border-bottom: 1px solid var(--border-color) !important; }
-    .stDataFrame tr:hover td { background: rgba(0, 212, 212, 0.05) !important; }
-    [data-testid="stMetricValue"] { color: var(--accent) !important; font-weight: 700 !important; }
-    [data-testid="stMetricLabel"] { color: var(--text-secondary) !important; }
-    ::-webkit-scrollbar { width: 8px; height: 8px; }
-    ::-webkit-scrollbar-track { background: var(--bg-secondary); }
-    ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
-    ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
-    .stAlert { background: var(--bg-card) !important; border: 1px solid var(--border-color) !important; border-radius: 8px !important; }
-    .stAlert [data-testid="stAlertContentSuccess"] { color: var(--success) !important; }
-    hr { border-color: var(--border-color) !important; }
-    .streamlit-expanderHeader {
-        background: var(--bg-card) !important; border: 1px solid var(--border-color) !important;
-        border-radius: 8px !important; color: var(--text-primary) !important;
-    }
-    .streamlit-expanderContent {
-        background: var(--bg-secondary) !important; border: 1px solid var(--border-color) !important;
-        border-top: none !important; border-radius: 0 0 8px 8px !important;
-    }
-    .stCheckbox > label, .stRadio > label { color: var(--text-secondary) !important; }
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;}
-    @media (max-width: 768px) {
-        [data-testid="stSidebar"] { min-width: 200px !important; max-width: 200px !important; }
-    }
+# Usamos st.html (disponible en Streamlit >=1.28) para inyectar CSS global
+# con selectores de alta especificidad
+
+css = """
+<style id="hotel-logbook-theme">
+/* ===== RESET GLOBAL ===== */
+html, body, .stApp, [data-testid="stAppViewContainer"] {
+    background-color: #0b0f14 !important;
+    color: #e8ecf1 !important;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif !important;
+}
+
+/* ===== SIDEBAR ===== */
+[data-testid="stSidebar"] {
+    background-color: #111820 !important;
+    border-right: 1px solid #1e2a38 !important;
+}
+[data-testid="stSidebar"] [data-testid="stVerticalBlock"] {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+}
+[data-testid="stSidebar"] .stButton > button {
+    width: 100% !important;
+    text-align: left !important;
+    background: transparent !important;
+    border: none !important;
+    color: #8b9aae !important;
+    font-size: 0.95rem !important;
+    padding: 0.6rem 1rem !important;
+    border-radius: 8px !important;
+    transition: all 0.2s ease !important;
+    margin-bottom: 0.3rem !important;
+    box-shadow: none !important;
+}
+[data-testid="stSidebar"] .stButton > button:hover {
+    background: rgba(0, 212, 212, 0.08) !important;
+    color: #e8ecf1 !important;
+}
+[data-testid="stSidebar"] .stButton > button[kind="primary"] {
+    background: #00d4d4 !important;
+    color: #000000 !important;
+    font-weight: 600 !important;
+    border: none !important;
+}
+[data-testid="stSidebar"] .stButton > button[kind="primary"]:hover {
+    background: #00bbbb !important;
+    color: #000000 !important;
+}
+
+/* ===== MAIN CONTENT AREA ===== */
+[data-testid="stAppViewContainer"] > section[data-testid="stAppViewContainer"] > div {
+    background: #0b0f14 !important;
+}
+
+/* ===== TÍTULOS Y TEXTOS ===== */
+h1, h2, h3, h4, h5, h6, .stMarkdown h1, .stMarkdown h2, .stMarkdown h3 {
+    color: #e8ecf1 !important;
+    font-weight: 600 !important;
+}
+p, span, label, .stMarkdown p, .stMarkdown span {
+    color: #8b9aae !important;
+}
+
+/* ===== CARDS / CONTENEDORES ===== */
+[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlockBorderWrapper"] {
+    background: #151c24 !important;
+    border: 1px solid #1e2a38 !important;
+    border-radius: 12px !important;
+    padding: 1.5rem !important;
+}
+
+/* ===== INPUTS ===== */
+[data-testid="stTextInput"] > div > div > input,
+[data-testid="stTextArea"] > div > div > textarea,
+[data-testid="stNumberInput"] > div > div > input,
+[data-testid="stDateInput"] > div > div > input,
+[data-testid="stTimeInput"] > div > div > input {
+    background-color: #1a2330 !important;
+    border: 1px solid #1e2a38 !important;
+    border-radius: 8px !important;
+    color: #e8ecf1 !important;
+    padding: 0.6rem 0.8rem !important;
+    font-size: 0.95rem !important;
+}
+[data-testid="stTextInput"] > div > div > input:focus,
+[data-testid="stTextArea"] > div > div > textarea:focus {
+    border-color: #00d4d4 !important;
+    box-shadow: 0 0 0 2px rgba(0, 212, 212, 0.15) !important;
+}
+[data-testid="stTextInput"] > div > div > input::placeholder,
+[data-testid="stTextArea"] > div > div > textarea::placeholder {
+    color: #5a6b7d !important;
+}
+
+/* ===== SELECTBOX / DROPDOWN ===== */
+[data-testid="stSelectbox"] > div > div > div {
+    background-color: #1a2330 !important;
+    border: 1px solid #1e2a38 !important;
+    border-radius: 8px !important;
+    color: #e8ecf1 !important;
+}
+[data-testid="stSelectbox"] > div > div > div > div {
+    color: #e8ecf1 !important;
+}
+
+/* ===== DATE PICKER ===== */
+[data-testid="stDateInput"] > div > div > input {
+    background-color: #1a2330 !important;
+    border: 1px solid #1e2a38 !important;
+    border-radius: 8px !important;
+    color: #e8ecf1 !important;
+}
+
+/* ===== TIME PICKER ===== */
+[data-testid="stTimeInput"] > div > div > input {
+    background-color: #1a2330 !important;
+    border: 1px solid #1e2a38 !important;
+    border-radius: 8px !important;
+    color: #e8ecf1 !important;
+}
+
+/* ===== BOTONES PRINCIPALES ===== */
+.stButton > button[kind="primary"] {
+    background: #00d4d4 !important;
+    color: #000000 !important;
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 0.75rem 1.5rem !important;
+    font-weight: 600 !important;
+    font-size: 1rem !important;
+    transition: all 0.2s ease !important;
+    width: 100% !important;
+}
+.stButton > button[kind="primary"]:hover {
+    background: #00bbbb !important;
+    color: #000000 !important;
+    transform: translateY(-1px) !important;
+}
+.stButton > button[kind="primary"]:active {
+    background: #00aaaa !important;
+    color: #000000 !important;
+}
+
+/* ===== BOTONES SECUNDARIOS ===== */
+.stButton > button[kind="secondary"] {
+    background: #1a2330 !important;
+    color: #e8ecf1 !important;
+    border: 1px solid #1e2a38 !important;
+    border-radius: 8px !important;
+}
+.stButton > button[kind="secondary"]:hover {
+    background: #253040 !important;
+    border-color: #00d4d4 !important;
+}
+
+/* ===== TABLAS / DATAFRAME ===== */
+[data-testid="stDataFrame"] {
+    background: #151c24 !important;
+    border-radius: 12px !important;
+    border: 1px solid #1e2a38 !important;
+}
+[data-testid="stDataFrame"] th {
+    background: #111820 !important;
+    color: #e8ecf1 !important;
+    font-weight: 600 !important;
+    border-bottom: 1px solid #1e2a38 !important;
+}
+[data-testid="stDataFrame"] td {
+    color: #8b9aae !important;
+    border-bottom: 1px solid #1e2a38 !important;
+}
+[data-testid="stDataFrame"] tr:hover td {
+    background: rgba(0, 212, 212, 0.05) !important;
+}
+
+/* ===== METRICS ===== */
+[data-testid="stMetricValue"] {
+    color: #00d4d4 !important;
+    font-weight: 700 !important;
+}
+[data-testid="stMetricLabel"] {
+    color: #8b9aae !important;
+}
+
+/* ===== TABS ===== */
+[data-testid="stTabs"] [role="tablist"] {
+    background: transparent !important;
+    border-bottom: 1px solid #1e2a38 !important;
+}
+[data-testid="stTabs"] [role="tab"] {
+    color: #8b9aae !important;
+    background: transparent !important;
+    border: none !important;
+}
+[data-testid="stTabs"] [role="tab"][aria-selected="true"] {
+    color: #00d4d4 !important;
+    border-bottom: 2px solid #00d4d4 !important;
+}
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: #111820; }
+::-webkit-scrollbar-thumb { background: #1e2a38; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #5a6b7d; }
+
+/* ===== ALERTS / TOAST ===== */
+.stAlert {
+    background: #151c24 !important;
+    border: 1px solid #1e2a38 !important;
+    border-radius: 8px !important;
+}
+.stAlert [data-testid="stAlertContentSuccess"] { color: #2ed573 !important; }
+.stAlert [data-testid="stAlertContentError"] { color: #ff4757 !important; }
+.stAlert [data-testid="stAlertContentWarning"] { color: #ffa502 !important; }
+.stAlert [data-testid="stAlertContentInfo"] { color: #00d4d4 !important; }
+
+/* ===== DIVIDER ===== */
+hr { border-color: #1e2a38 !important; }
+
+/* ===== EXPANDER ===== */
+.streamlit-expanderHeader {
+    background: #151c24 !important;
+    border: 1px solid #1e2a38 !important;
+    border-radius: 8px !important;
+    color: #e8ecf1 !important;
+}
+
+/* ===== OCULTAR HEADER/MENU ===== */
+#MainMenu, header, footer, [data-testid="stToolbar"] {
+    visibility: hidden !important;
+    display: none !important;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+    [data-testid="stSidebar"] { min-width: 200px !important; max-width: 200px !important; }
+}
 </style>
-""", unsafe_allow_html=True)
+"""
+
+# Inyectar CSS usando st.html si está disponible, sino st.markdown
+try:
+    st.html(css)
+except Exception:
+    st.markdown(css, unsafe_allow_html=True)
 
 # ============================================================
 # CONEXIÓN A SUPABASE
 # ============================================================
 @st.cache_resource
 def get_supabase_client() -> Client:
-    """Inicializa y retorna el cliente de Supabase."""
-    # Opción 1: Streamlit Secrets (recomendado para producción)
     try:
         url = st.secrets["SUPABASE_URL"]
         key = st.secrets["SUPABASE_KEY"]
     except Exception:
-        # Opción 2: Variables de entorno (para desarrollo local)
         url = os.environ.get("SUPABASE_URL")
         key = os.environ.get("SUPABASE_KEY")
 
@@ -136,26 +281,16 @@ def get_supabase_client() -> Client:
         st.error("""
         ⚠️ **Credenciales de Supabase no encontradas.**
 
-        Configura tus credenciales de una de estas formas:
-
-        **Opción A - Streamlit Secrets (recomendado):**
-        Crea el archivo `.streamlit/secrets.toml` con:
+        Configura tus credenciales en `.streamlit/secrets.toml`:
         ```toml
         SUPABASE_URL = "https://tu-proyecto.supabase.co"
         SUPABASE_KEY = "tu-anon-key"
-        ```
-
-        **Opción B - Variables de entorno:**
-        ```bash
-        export SUPABASE_URL="https://tu-proyecto.supabase.co"
-        export SUPABASE_KEY="tu-anon-key"
         ```
         """)
         st.stop()
 
     return create_client(url, key)
 
-# Intentar conectar
 try:
     supabase = get_supabase_client()
     connection_ok = True
@@ -169,9 +304,7 @@ except Exception as e:
 # ============================================================
 
 def get_requests():
-    """Obtiene todas las solicitudes de Supabase."""
-    if not connection_ok:
-        return []
+    if not connection_ok: return []
     try:
         response = supabase.table("requests").select("*").order("created_at", desc=True).execute()
         return response.data if response.data else []
@@ -180,9 +313,7 @@ def get_requests():
         return []
 
 def save_request_supabase(date_val, time_val, room, operator, req_type, notes):
-    """Guarda una nueva solicitud en Supabase."""
-    if not connection_ok:
-        return False
+    if not connection_ok: return False
     try:
         data = {
             "date": date_val.strftime("%m/%d/%Y"),
@@ -200,9 +331,7 @@ def save_request_supabase(date_val, time_val, room, operator, req_type, notes):
         return False
 
 def delete_request_supabase(req_id):
-    """Elimina una solicitud de Supabase."""
-    if not connection_ok:
-        return False
+    if not connection_ok: return False
     try:
         supabase.table("requests").delete().eq("id", req_id).execute()
         return True
@@ -211,9 +340,7 @@ def delete_request_supabase(req_id):
         return False
 
 def update_request_status_supabase(req_id, new_status):
-    """Actualiza el status de una solicitud."""
-    if not connection_ok:
-        return False
+    if not connection_ok: return False
     try:
         supabase.table("requests").update({"status": new_status}).eq("id", req_id).execute()
         return True
@@ -222,9 +349,7 @@ def update_request_status_supabase(req_id, new_status):
         return False
 
 def clear_all_requests_supabase():
-    """Elimina todas las solicitudes (usar con cuidado)."""
-    if not connection_ok:
-        return False
+    if not connection_ok: return False
     try:
         supabase.table("requests").delete().neq("id", 0).execute()
         return True
@@ -232,12 +357,7 @@ def clear_all_requests_supabase():
         st.error(f"Error clearing requests: {e}")
         return False
 
-# ============================================================
-# OPERADORES Y TIPOS DE SOLICITUD (desde Supabase o defaults)
-# ============================================================
-
 def get_operators():
-    """Obtiene operadores de Supabase o usa defaults."""
     if not connection_ok:
         return ["Fred Wayne", "Maria Garcia", "John Smith", "Sarah Chen"]
     try:
@@ -249,7 +369,6 @@ def get_operators():
     return ["Fred Wayne", "Maria Garcia", "John Smith", "Sarah Chen"]
 
 def get_request_types():
-    """Obtiene tipos de solicitud de Supabase o usa defaults."""
     if not connection_ok:
         return [
             "Housekeeping", "Maintenance", "Room Service", "Concierge",
@@ -269,9 +388,7 @@ def get_request_types():
     ]
 
 def add_operator_supabase(name):
-    """Agrega un operador a Supabase."""
-    if not connection_ok:
-        return False
+    if not connection_ok: return False
     try:
         supabase.table("operators").insert({"name": name.strip()}).execute()
         return True
@@ -280,9 +397,7 @@ def add_operator_supabase(name):
         return False
 
 def delete_operator_supabase(name):
-    """Elimina un operador de Supabase."""
-    if not connection_ok:
-        return False
+    if not connection_ok: return False
     try:
         supabase.table("operators").delete().eq("name", name).execute()
         return True
@@ -291,9 +406,7 @@ def delete_operator_supabase(name):
         return False
 
 def add_request_type_supabase(name):
-    """Agrega un tipo de solicitud a Supabase."""
-    if not connection_ok:
-        return False
+    if not connection_ok: return False
     try:
         supabase.table("request_types").insert({"name": name.strip()}).execute()
         return True
@@ -302,9 +415,7 @@ def add_request_type_supabase(name):
         return False
 
 def delete_request_type_supabase(name):
-    """Elimina un tipo de solicitud de Supabase."""
-    if not connection_ok:
-        return False
+    if not connection_ok: return False
     try:
         supabase.table("request_types").delete().eq("name", name).execute()
         return True
@@ -318,9 +429,6 @@ def delete_request_type_supabase(name):
 if "page" not in st.session_state:
     st.session_state.page = "new_log"
 
-# ============================================================
-# FUNCIONES AUXILIARES
-# ============================================================
 def set_page(page_name):
     st.session_state.page = page_name
     st.rerun()
@@ -329,7 +437,6 @@ def get_stats(requests_list):
     df = pd.DataFrame(requests_list)
     if df.empty:
         return {"total": 0, "today": 0, "by_type": pd.DataFrame(), "by_operator": pd.DataFrame()}
-
     today_str = datetime.now().strftime("%m/%d/%Y")
     total = len(df)
     today_count = len(df[df["date"] == today_str])
@@ -337,7 +444,6 @@ def get_stats(requests_list):
     by_type.columns = ["Request Type", "Count"]
     by_operator = df["operator"].value_counts().reset_index()
     by_operator.columns = ["Operator", "Count"]
-
     return {"total": total, "today": today_count, "by_type": by_type, "by_operator": by_operator}
 
 # ============================================================
@@ -346,15 +452,17 @@ def get_stats(requests_list):
 with st.sidebar:
     st.markdown("""
     <div style="display:flex; align-items:center; gap:12px; margin-bottom:2rem; padding:0.5rem 0;">
-        <div style="width:40px; height:40px; background:var(--accent); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1.3rem;">📞</div>
+        <div style="width:40px; height:40px; background:#00d4d4; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1.3rem;">
+            📞
+        </div>
         <div>
-            <div style="font-size:1.15rem; font-weight:700; color:var(--text-primary); line-height:1.2;">Hotel Logbook</div>
-            <div style="font-size:0.8rem; color:var(--text-muted);">Operators</div>
+            <div style="font-size:1.15rem; font-weight:700; color:#e8ecf1; line-height:1.2;">Hotel Logbook</div>
+            <div style="font-size:0.8rem; color:#5a6b7d;">Operators</div>
         </div>
     </div>
     """, unsafe_allow_html=True)
 
-    st.markdown("<hr style='margin:1rem 0; border-color:var(--border-color);'>", unsafe_allow_html=True)
+    st.markdown("<hr style='margin:1rem 0; border-color:#1e2a38;'>", unsafe_allow_html=True)
 
     nav_items = [
         ("new_log", "➕", "New Log"),
@@ -368,7 +476,6 @@ with st.sidebar:
         if st.button(f"{icon}  {label}", key=f"nav_{key}", type=btn_type, use_container_width=True):
             set_page(key)
 
-    # Estado de conexión
     if connection_ok:
         st.markdown("""
         <div style="margin-top:1rem; padding:0.5rem; background:rgba(46,213,115,0.1); border:1px solid rgba(46,213,115,0.3); border-radius:8px; text-align:center;">
@@ -384,9 +491,9 @@ with st.sidebar:
 
     st.markdown("""
     <div style="position:fixed; bottom:20px; left:20px; right:20px;">
-        <hr style="border-color:var(--border-color); margin-bottom:0.8rem;">
-        <div style="font-size:0.75rem; color:var(--text-muted); text-align:center;">
-            Made by <span style="color:var(--accent);">Fred Wayne</span><br>Concierge
+        <hr style="border-color:#1e2a38; margin-bottom:0.8rem;">
+        <div style="font-size:0.75rem; color:#5a6b7d; text-align:center;">
+            Made by <span style="color:#00d4d4;">Fred Wayne</span><br>Concierge
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -397,10 +504,10 @@ with st.sidebar:
 if st.session_state.page == "new_log":
     st.markdown("""
     <div style="display:flex; align-items:center; gap:10px; margin-bottom:0.3rem;">
-        <div style="width:28px; height:28px; background:var(--accent); border-radius:50%; display:flex; align-items:center; justify-content:center; color:#000; font-weight:700; font-size:1rem;">+</div>
-        <h1 style="margin:0; font-size:1.6rem;">New Request</h1>
+        <div style="width:28px; height:28px; background:#00d4d4; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#000; font-weight:700; font-size:1rem;">+</div>
+        <h1 style="margin:0; font-size:1.6rem; color:#e8ecf1;">New Request</h1>
     </div>
-    <p style="color:var(--text-muted); margin-bottom:1.5rem; font-size:0.95rem;">Log a new guest request</p>
+    <p style="color:#5a6b7d; margin-bottom:1.5rem; font-size:0.95rem;">Log a new guest request</p>
     """, unsafe_allow_html=True)
 
     operators = get_operators()
@@ -409,7 +516,7 @@ if st.session_state.page == "new_log":
     with st.container():
         st.markdown("<div style='background:#151c24; border:1px solid #1e2a38; border-radius:12px; padding:1.5rem 2rem;'>", unsafe_allow_html=True)
 
-        st.markdown("<h3 style='margin-bottom:1.2rem; font-size:1.1rem;'>Request Details</h3>", unsafe_allow_html=True)
+        st.markdown("<h3 style='margin-bottom:1.2rem; font-size:1.1rem; color:#e8ecf1;'>Request Details</h3>", unsafe_allow_html=True)
 
         col1, col2 = st.columns(2)
         with col1:
@@ -447,17 +554,16 @@ if st.session_state.page == "new_log":
 elif st.session_state.page == "view_logs":
     st.markdown("""
     <div style="display:flex; align-items:center; gap:10px; margin-bottom:0.3rem;">
-        <div style="width:28px; height:28px; background:var(--accent); border-radius:50%; display:flex; align-items:center; justify-content:center; color:#000; font-weight:700; font-size:1rem;">📋</div>
-        <h1 style="margin:0; font-size:1.6rem;">View Logs</h1>
+        <div style="width:28px; height:28px; background:#00d4d4; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#000; font-weight:700; font-size:1rem;">📋</div>
+        <h1 style="margin:0; font-size:1.6rem; color:#e8ecf1;">View Logs</h1>
     </div>
-    <p style="color:var(--text-muted); margin-bottom:1.5rem; font-size:0.95rem;">Review all logged guest requests</p>
+    <p style="color:#5a6b7d; margin-bottom:1.5rem; font-size:0.95rem;">Review all logged guest requests</p>
     """, unsafe_allow_html=True)
 
     requests_list = get_requests()
     operators = get_operators()
     request_types = get_request_types()
 
-    # Filtros
     with st.container():
         st.markdown("<div style='background:#151c24; border:1px solid #1e2a38; border-radius:12px; padding:1rem 1.5rem; margin-bottom:1rem;'>", unsafe_allow_html=True)
 
@@ -503,10 +609,9 @@ elif st.session_state.page == "view_logs":
                 }
             )
 
-            st.markdown(f"<p style='color:var(--text-muted); font-size:0.85rem;'>Showing {len(display_df)} request(s)</p>", unsafe_allow_html=True)
+            st.markdown(f"<p style='color:#5a6b7d; font-size:0.85rem;'>Showing {len(display_df)} request(s)</p>", unsafe_allow_html=True)
 
-            # Acciones
-            st.markdown("<h4 style='margin-top:1.5rem;'>Actions</h4>", unsafe_allow_html=True)
+            st.markdown("<h4 style='margin-top:1.5rem; color:#e8ecf1;'>Actions</h4>", unsafe_allow_html=True)
 
             acol1, acol2, acol3 = st.columns([1, 1, 3])
             with acol1:
@@ -544,10 +649,10 @@ elif st.session_state.page == "view_logs":
 elif st.session_state.page == "stats":
     st.markdown("""
     <div style="display:flex; align-items:center; gap:10px; margin-bottom:0.3rem;">
-        <div style="width:28px; height:28px; background:var(--accent); border-radius:50%; display:flex; align-items:center; justify-content:center; color:#000; font-weight:700; font-size:1rem;">📊</div>
-        <h1 style="margin:0; font-size:1.6rem;">Statistics</h1>
+        <div style="width:28px; height:28px; background:#00d4d4; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#000; font-weight:700; font-size:1rem;">📊</div>
+        <h1 style="margin:0; font-size:1.6rem; color:#e8ecf1;">Statistics</h1>
     </div>
-    <p style="color:var(--text-muted); margin-bottom:1.5rem; font-size:0.95rem;">Overview of guest request activity</p>
+    <p style="color:#5a6b7d; margin-bottom:1.5rem; font-size:0.95rem;">Overview of guest request activity</p>
     """, unsafe_allow_html=True)
 
     requests_list = get_requests()
@@ -565,18 +670,18 @@ elif st.session_state.page == "stats":
     with mcol4:
         st.metric("Request Types", len(request_types))
 
-    st.markdown("<hr style='margin:1.5rem 0;'>", unsafe_allow_html=True)
+    st.markdown("<hr style='margin:1.5rem 0; border-color:#1e2a38;'>", unsafe_allow_html=True)
 
     if stats["total"] > 0:
         ccol1, ccol2 = st.columns(2)
         with ccol1:
-            st.markdown("<h4 style='margin-bottom:1rem;'>Requests by Type</h4>", unsafe_allow_html=True)
+            st.markdown("<h4 style='margin-bottom:1rem; color:#e8ecf1;'>Requests by Type</h4>", unsafe_allow_html=True)
             st.bar_chart(stats["by_type"].set_index("Request Type"), use_container_width=True, color="#00d4d4")
         with ccol2:
-            st.markdown("<h4 style='margin-bottom:1rem;'>Requests by Operator</h4>", unsafe_allow_html=True)
+            st.markdown("<h4 style='margin-bottom:1rem; color:#e8ecf1;'>Requests by Operator</h4>", unsafe_allow_html=True)
             st.bar_chart(stats["by_operator"].set_index("Operator"), use_container_width=True, color="#00d4d4")
 
-        st.markdown("<h4 style='margin-top:1.5rem;'>Recent Activity</h4>", unsafe_allow_html=True)
+        st.markdown("<h4 style='margin-top:1.5rem; color:#e8ecf1;'>Recent Activity</h4>", unsafe_allow_html=True)
         recent_df = pd.DataFrame(requests_list[:10])
         if not recent_df.empty and all(c in recent_df.columns for c in ["date", "time", "room", "operator", "request_type"]):
             recent_df = recent_df[["date", "time", "room", "operator", "request_type"]]
@@ -591,16 +696,16 @@ elif st.session_state.page == "stats":
 elif st.session_state.page == "admin":
     st.markdown("""
     <div style="display:flex; align-items:center; gap:10px; margin-bottom:0.3rem;">
-        <div style="width:28px; height:28px; background:var(--accent); border-radius:50%; display:flex; align-items:center; justify-content:center; color:#000; font-weight:700; font-size:1rem;">⚙️</div>
-        <h1 style="margin:0; font-size:1.6rem;">Admin</h1>
+        <div style="width:28px; height:28px; background:#00d4d4; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#000; font-weight:700; font-size:1rem;">⚙️</div>
+        <h1 style="margin:0; font-size:1.6rem; color:#e8ecf1;">Admin</h1>
     </div>
-    <p style="color:var(--text-muted); margin-bottom:1.5rem; font-size:0.95rem;">Manage operators, request types and data</p>
+    <p style="color:#5a6b7d; margin-bottom:1.5rem; font-size:0.95rem;">Manage operators, request types and data</p>
     """, unsafe_allow_html=True)
 
     tab1, tab2, tab3 = st.tabs(["👤 Operators", "🏷️ Request Types", "💾 Data"])
 
     with tab1:
-        st.markdown("<h4>Manage Operators</h4>", unsafe_allow_html=True)
+        st.markdown("<h4 style='color:#e8ecf1;'>Manage Operators</h4>", unsafe_allow_html=True)
         operators = get_operators()
 
         for i, op in enumerate(operators):
@@ -616,7 +721,7 @@ elif st.session_state.page == "admin":
                     else:
                         st.error("Need at least one operator.")
 
-        st.markdown("<hr style='margin:1rem 0;'>", unsafe_allow_html=True)
+        st.markdown("<hr style='margin:1rem 0; border-color:#1e2a38;'>", unsafe_allow_html=True)
         new_op = st.text_input("Add New Operator", placeholder="Enter name...", key="new_op")
         if st.button("➕ Add Operator", type="primary"):
             if new_op.strip() and new_op.strip() not in operators:
@@ -631,7 +736,7 @@ elif st.session_state.page == "admin":
                 st.error("Please enter a name.")
 
     with tab2:
-        st.markdown("<h4>Manage Request Types</h4>", unsafe_allow_html=True)
+        st.markdown("<h4 style='color:#e8ecf1;'>Manage Request Types</h4>", unsafe_allow_html=True)
         request_types = get_request_types()
 
         for i, rt in enumerate(request_types):
@@ -647,7 +752,7 @@ elif st.session_state.page == "admin":
                     else:
                         st.error("Need at least one request type.")
 
-        st.markdown("<hr style='margin:1rem 0;'>", unsafe_allow_html=True)
+        st.markdown("<hr style='margin:1rem 0; border-color:#1e2a38;'>", unsafe_allow_html=True)
         new_rt = st.text_input("Add New Request Type", placeholder="Enter type...", key="new_rt")
         if st.button("➕ Add Type", type="primary"):
             if new_rt.strip() and new_rt.strip() not in request_types:
@@ -662,9 +767,9 @@ elif st.session_state.page == "admin":
                 st.error("Please enter a type.")
 
     with tab3:
-        st.markdown("<h4>Data Management</h4>", unsafe_allow_html=True)
+        st.markdown("<h4 style='color:#e8ecf1;'>Data Management</h4>", unsafe_allow_html=True)
         requests_list = get_requests()
-        st.markdown(f"<p>Total requests in Supabase: <strong style='color:var(--accent);'>{len(requests_list)}</strong></p>", unsafe_allow_html=True)
+        st.markdown(f"<p>Total requests in Supabase: <strong style='color:#00d4d4;'>{len(requests_list)}</strong></p>", unsafe_allow_html=True)
 
         dcol1, dcol2 = st.columns(2)
         with dcol1:
