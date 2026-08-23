@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime, time
+from zoneinfo import ZoneInfo
 from supabase import create_client, Client
 import os
 
@@ -12,6 +13,29 @@ st.set_page_config(
     page_icon="📞",
     layout="wide"
 )
+
+# ============================================================
+# ZONA HORARIA (configurable en secrets, default America/Costa_Rica)
+# ============================================================
+def get_timezone():
+    try:
+        return st.secrets.get("TIMEZONE", "America/Costa_Rica")
+    except Exception:
+        return "America/Costa_Rica"
+
+TIMEZONE = get_timezone()
+
+def get_local_now():
+    """Devuelve datetime local según la zona horaria configurada."""
+    return datetime.now(ZoneInfo(TIMEZONE))
+
+def get_local_time():
+    """Devuelve solo la hora local."""
+    return get_local_now().time()
+
+def get_local_date():
+    """Devuelve solo la fecha local."""
+    return get_local_now().date()
 
 # ============================================================
 # CSS
@@ -202,15 +226,26 @@ def del_req_type(name):
 if "page" not in st.session_state:
     st.session_state.page = "new_log"
 
+# Inicializar hora y fecha local en session_state
+if "current_time" not in st.session_state:
+    st.session_state.current_time = get_local_time()
+if "current_date" not in st.session_state:
+    st.session_state.current_date = get_local_date()
+
 def nav_to(page):
     st.session_state.page = page
     st.rerun()
+
+def refresh_time():
+    """Callback: actualiza la hora y fecha local al interactuar con inputs."""
+    st.session_state.current_time = get_local_time()
+    st.session_state.current_date = get_local_date()
 
 def get_stats(data):
     df = pd.DataFrame(data)
     if df.empty:
         return {"total":0,"today":0,"by_type":pd.DataFrame(),"by_operator":pd.DataFrame()}
-    today = datetime.now().strftime("%m/%d/%Y")
+    today = get_local_now().strftime("%m/%d/%Y")
     total = len(df)
     today_c = len(df[df["date"]==today])
     bt = df["request_type"].value_counts().reset_index()
@@ -220,14 +255,12 @@ def get_stats(data):
     return {"total":total,"today":today_c,"by_type":bt,"by_operator":bo}
 
 # ============================================================
-# LAYOUT: SIDEBAR SIMULADO (proporción ajustada)
+# LAYOUT
 # ============================================================
-# 0.55 = sidebar estrecho, 4 = contenido principal
 sidebar_col, main_col = st.columns([0.55, 4])
 
 # ---------- SIDEBAR ----------
 with sidebar_col:
-    # Header
     st.markdown("""
     <div style="display:flex; align-items:center; gap:8px; margin-bottom:1.2rem; margin-top:0.5rem;">
         <div style="width:32px; height:32px; background:#00d4d4; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:1.1rem;">
@@ -241,7 +274,6 @@ with sidebar_col:
     <hr style="border-color:#1e2a38; margin:0.8rem 0;">
     """, unsafe_allow_html=True)
 
-    # Navegación con botones
     pages = [
         ("new_log", "➕", "New Log"),
         ("view_logs", "📋", "View Logs"),
@@ -254,7 +286,6 @@ with sidebar_col:
         if st.button(f"{icon}  {label}", key=f"nav_{pid}", type=btn_type, use_container_width=True):
             nav_to(pid)
 
-    # Status
     if connection_ok:
         st.markdown("""
         <div style="margin-top:0.8rem; padding:0.35rem; background:rgba(46,213,115,0.1); border:1px solid rgba(46,213,115,0.3); border-radius:6px; text-align:center;">
@@ -268,12 +299,13 @@ with sidebar_col:
         </div>
         """, unsafe_allow_html=True)
 
-    # Footer
+    # Footer en cyan brillante
     st.markdown("""
     <div style="margin-top:2rem;">
         <hr style="border-color:#1e2a38; margin-bottom:0.5rem;">
-        <div style="font-size:0.65rem; color:#5a6b7d; text-align:center;">
-            Made by <span style="color:#00d4d4;">Fred Wayne</span><br>Concierge
+        <div style="font-size:0.65rem; text-align:center; line-height:1.5;">
+            <span style="color:#00d4d4; font-weight:700;">Made by Fred Wayne</span><br>
+            <span style="color:#00d4d4; font-weight:500;">Concierge</span>
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -296,7 +328,6 @@ with main_col:
         operators = get_operators()
         request_types = get_request_types()
 
-        # Card
         st.markdown("""
         <div style="background:#151c24; border:1px solid #1e2a38; border-radius:12px; padding:1.5rem 2rem;">
             <h3 style="margin:0 0 1.2rem 0; font-size:1rem; color:#e8ecf1;">Request Details</h3>
@@ -305,26 +336,46 @@ with main_col:
 
         c1, c2 = st.columns(2)
         with c1:
-            d = st.date_input("Date", value=datetime.now().date(), key="d1")
+            d = st.date_input("Date", value=st.session_state.current_date, key="d1")
         with c2:
-            t = st.time_input("Time", value=datetime.now().time(), key="t1")
+            t = st.time_input("Time", value=st.session_state.current_time, key="t1")
 
         c3, c4 = st.columns(2)
         with c3:
-            room = st.text_input("Room #", placeholder="e.g. 538", key="r1")
+            # on_change actualiza la hora al salir del campo (Enter o cambio de foco)
+            room = st.text_input(
+                "Room #", 
+                placeholder="e.g. 538", 
+                key="r1",
+                on_change=refresh_time
+            )
         with c4:
             op = st.selectbox("Operator", options=operators, key="o1")
 
         rt = st.selectbox("Request Type", options=request_types, key="rt1")
-        notes = st.text_area("Notes (optional)", placeholder="Additional details...", height=100, key="n1")
+
+        # on_change también en Notes para actualizar hora
+        notes = st.text_area(
+            "Notes (optional)", 
+            placeholder="Additional details...", 
+            height=100, 
+            key="n1",
+            on_change=refresh_time
+        )
 
         if st.button("Save Request", type="primary", use_container_width=True, key="save1"):
             if not room.strip():
                 st.error("⚠️ Please enter a room number.")
             else:
-                if save_request(d, t, room.strip(), op, rt, notes):
+                # Guardar con la hora actualizada
+                current_t = st.session_state.current_time
+                current_d = st.session_state.current_date
+                if save_request(current_d, current_t, room.strip(), op, rt, notes):
                     st.success("✅ Saved!")
                     st.balloons()
+                    # Reset hora para la próxima entrada
+                    st.session_state.current_time = get_local_time()
+                    st.session_state.current_date = get_local_date()
                 else:
                     st.error("❌ Failed to save.")
 
@@ -342,7 +393,6 @@ with main_col:
         operators = get_operators()
         request_types = get_request_types()
 
-        # Filtros card
         st.markdown("""
         <div style="background:#151c24; border:1px solid #1e2a38; border-radius:12px; padding:1rem 1.5rem; margin-bottom:1rem;">
         """, unsafe_allow_html=True)
@@ -535,7 +585,7 @@ with main_col:
                     st.download_button(
                         label="📥 Export CSV",
                         data=csv,
-                        file_name=f"hotel_logbook_{datetime.now().strftime('%Y%m%d')}.csv",
+                        file_name=f"hotel_logbook_{get_local_now().strftime('%Y%m%d')}.csv",
                         mime="text/csv",
                         type="primary",
                         key="bexp"
