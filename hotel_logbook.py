@@ -15,7 +15,7 @@ st.set_page_config(
 )
 
 # ============================================================
-# ZONA HORARIA (configurable en secrets, default America/Costa_Rica)
+# ZONA HORARIA
 # ============================================================
 def get_timezone():
     try:
@@ -26,15 +26,12 @@ def get_timezone():
 TIMEZONE = get_timezone()
 
 def get_local_now():
-    """Devuelve datetime local según la zona horaria configurada."""
     return datetime.now(ZoneInfo(TIMEZONE))
 
 def get_local_time():
-    """Devuelve solo la hora local."""
     return get_local_now().time()
 
 def get_local_date():
-    """Devuelve solo la fecha local."""
     return get_local_now().date()
 
 # ============================================================
@@ -226,20 +223,18 @@ def del_req_type(name):
 if "page" not in st.session_state:
     st.session_state.page = "new_log"
 
-# Inicializar hora y fecha local en session_state
-if "current_time" not in st.session_state:
-    st.session_state.current_time = get_local_time()
-if "current_date" not in st.session_state:
-    st.session_state.current_date = get_local_date()
+# Contador para forzar refresh del time_input
+if "time_counter" not in st.session_state:
+    st.session_state.time_counter = 0
 
 def nav_to(page):
     st.session_state.page = page
     st.rerun()
 
 def refresh_time():
-    """Callback: actualiza la hora y fecha local al interactuar con inputs."""
-    st.session_state.current_time = get_local_time()
-    st.session_state.current_date = get_local_date()
+    """Callback: actualiza hora y fuerza rerun para que el time_input se recree."""
+    st.session_state.time_counter += 1
+    st.rerun()
 
 def get_stats(data):
     df = pd.DataFrame(data)
@@ -328,6 +323,11 @@ with main_col:
         operators = get_operators()
         request_types = get_request_types()
 
+        # HORA Y FECHA ACTUALES (se recalculan en cada rerun)
+        now_local = get_local_now()
+        current_date = now_local.date()
+        current_time = now_local.time()
+
         st.markdown("""
         <div style="background:#151c24; border:1px solid #1e2a38; border-radius:12px; padding:1.5rem 2rem;">
             <h3 style="margin:0 0 1.2rem 0; font-size:1rem; color:#e8ecf1;">Request Details</h3>
@@ -336,13 +336,17 @@ with main_col:
 
         c1, c2 = st.columns(2)
         with c1:
-            d = st.date_input("Date", value=st.session_state.current_date, key="d1")
+            d = st.date_input("Date", value=current_date, key="d1")
         with c2:
-            t = st.time_input("Time", value=st.session_state.current_time, key="t1")
+            # Key dinámico basado en counter para forzar recreación del widget
+            t = st.time_input(
+                "Time", 
+                value=current_time, 
+                key=f"t1_{st.session_state.time_counter}"
+            )
 
         c3, c4 = st.columns(2)
         with c3:
-            # on_change actualiza la hora al salir del campo (Enter o cambio de foco)
             room = st.text_input(
                 "Room #", 
                 placeholder="e.g. 538", 
@@ -354,7 +358,6 @@ with main_col:
 
         rt = st.selectbox("Request Type", options=request_types, key="rt1")
 
-        # on_change también en Notes para actualizar hora
         notes = st.text_area(
             "Notes (optional)", 
             placeholder="Additional details...", 
@@ -367,15 +370,11 @@ with main_col:
             if not room.strip():
                 st.error("⚠️ Please enter a room number.")
             else:
-                # Guardar con la hora actualizada
-                current_t = st.session_state.current_time
-                current_d = st.session_state.current_date
-                if save_request(current_d, current_t, room.strip(), op, rt, notes):
+                # Al guardar, usar la hora EXACTA del sistema en este instante
+                save_now = get_local_now()
+                if save_request(save_now.date(), save_now.time(), room.strip(), op, rt, notes):
                     st.success("✅ Saved!")
                     st.balloons()
-                    # Reset hora para la próxima entrada
-                    st.session_state.current_time = get_local_time()
-                    st.session_state.current_date = get_local_date()
                 else:
                     st.error("❌ Failed to save.")
 
