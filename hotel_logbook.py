@@ -303,8 +303,8 @@ with sidebar_col:
 
     # Logo debajo del footer
     try:
-        # Centrar el logo usando columnas y aumentar tamaño
-        left_spacer, logo_col, right_spacer = st.columns([1, 2, 1])
+        # Logo grande y centrado
+        left_spacer, logo_col, right_spacer = st.columns([0.3, 3, 0.3])
         with logo_col:
             st.image("LogoWayne.png", use_container_width=True)
     except Exception:
