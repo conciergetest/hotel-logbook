@@ -303,7 +303,10 @@ with sidebar_col:
 
     # Logo debajo del footer
     try:
-        st.image("LogoWayne.png", width=80, use_container_width=False)
+        # Centrar el logo usando columnas y aumentar tamaño
+        left_spacer, logo_col, right_spacer = st.columns([1, 2, 1])
+        with logo_col:
+            st.image("LogoWayne.png", use_container_width=True)
     except Exception:
         st.caption("LogoWayne.png not found", help="Place LogoWayne.png in the same folder as this script")
 
