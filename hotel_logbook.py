@@ -81,6 +81,27 @@ st.markdown("""
 <style>
 .stApp { background-color: #0b0f14; }
 
+/* ===== APROVECHAR EL ESPACIO SUPERIOR ===== */
+/* Oculta el header transparente de Streamlit (crea un hueco arriba) */
+[data-testid="stHeader"] {
+    height: 0px !important;
+    min-height: 0px !important;
+    display: none !important;
+}
+/* Reduce el margen superior del bloque principal (sube "New Request") */
+.block-container {
+    padding-top: 0.4rem !important;
+    padding-bottom: 1rem !important;
+    margin-top: 0 !important;
+}
+/* Reduce el relleno superior del sidebar (sube "Hotel Logbook") */
+[data-testid="stSidebar"] > div:first-child {
+    padding-top: 0.3rem !important;
+}
+[data-testid="stSidebar"] {
+    padding-top: 0.3rem !important;
+}
+
 /* Inputs */
 [data-testid="stTextInput"] input,
 [data-testid="stTextArea"] textarea,
@@ -299,7 +320,7 @@ sidebar_col, main_col = st.columns([0.55, 4])
 # ---------- SIDEBAR ----------
 with sidebar_col:
     st.markdown("""
-    <div style="display:flex; align-items:center; gap:8px; margin-bottom:1.2rem; margin-top:0.5rem;">
+    <div style="display:flex; align-items:center; gap:8px; margin-bottom:1rem; margin-top:0.1rem;">
         <div style="width:32px; height:32px; background:#00d4d4; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:1.1rem;">
             📞
         </div>
