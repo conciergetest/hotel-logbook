@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 from zoneinfo import ZoneInfo
+import streamlit.components.v1 as components
 from supabase import create_client, Client
 import os
 
@@ -29,7 +30,7 @@ def get_local_now():
     return datetime.now(ZoneInfo(TIMEZONE))
 
 # ============================================================
-# FECHA EN ESPAÑOL
+# FECHA EN ESPAÑOL (disponible por si la necesitas en otro lugar)
 # ============================================================
 MESES_ES = [
     "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
@@ -38,6 +39,40 @@ MESES_ES = [
 
 def fecha_español(dt):
     return f"{MESES_ES[dt.month - 1]} {dt.day}, {dt.year}"
+
+# ============================================================
+# RELOJ EN VIVO (estilo imagen 1)
+# Hora grande con segundos arriba y fecha completa abajo,
+# alineado a la derecha, color cian con brillo.
+# Se actualiza cada segundo en el navegador SIN recargar la app
+# y siempre respeta la zona horaria configurada (TIMEZONE).
+# ============================================================
+def live_clock(timezone: str):
+    html = """
+    <div style="text-align:right; font-family:'Segoe UI', Arial, sans-serif; margin:0.2rem 0 0.6rem 0;">
+      <div id="clk-time" style="color:#00d4d4; font-weight:800; font-size:2.3rem;
+           text-shadow:0 0 14px rgba(0,212,212,0.55); line-height:1.15;">--:--:-- --</div>
+      <div id="clk-date" style="color:#00d4d4; font-weight:600; font-size:0.95rem;
+           text-shadow:0 0 8px rgba(0,212,212,0.35);">...</div>
+    </div>
+    <script>
+      const tz = "__TZ__";
+      const timeFmt = new Intl.DateTimeFormat('en-US', {
+        hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true, timeZone: tz
+      });
+      const dateFmt = new Intl.DateTimeFormat('en-US', {
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: tz
+      });
+      function tick() {
+        const now = new Date();
+        document.getElementById('clk-time').textContent = timeFmt.format(now);
+        document.getElementById('clk-date').textContent = dateFmt.format(now);
+      }
+      tick();
+      setInterval(tick, 1000);
+    </script>
+    """.replace("__TZ__", timezone)
+    components.html(html, height=100, scrolling=False)
 
 # ============================================================
 # CSS
@@ -120,11 +155,13 @@ def get_requests():
         return []
 
 def save_request(date_val, time_val, room, operator, req_type, notes):
+    """Guarda el registro. La fecha y hora SIEMPRE vienen del reloj del sistema
+    (get_local_now()), nunca de lo que el usuario escriba en el formulario."""
     if not connection_ok: return False
     try:
         data = {
             "date": date_val.strftime("%m/%d/%Y"),
-            "time": time_val.strftime("%I:%M %p"),
+            "time": time_val.strftime("%I:%M %p"),   # si quieres segundos: "%I:%M:%S %p"
             "room": room.strip(),
             "operator": operator,
             "request_type": req_type,
@@ -228,6 +265,15 @@ def del_req_type(name):
 if "page" not in st.session_state:
     st.session_state.page = "new_log"
 
+# Contador de "versión" del formulario: al incrementarse, las llaves de los
+# widgets cambian y Streamlit los recrea vacíos (evita duplicados al guardar).
+if "form_version" not in st.session_state:
+    st.session_state.form_version = 0
+
+# Bandera para mostrar el mensaje de éxito DESPUÉS de limpiar el formulario.
+if "just_saved" not in st.session_state:
+    st.session_state.just_saved = False
+
 def nav_to(page):
     st.session_state.page = page
     st.rerun()
@@ -315,13 +361,8 @@ with sidebar_col:
 # ============================================================
 with main_col:
 
-    # Fecha en español, alineada a la derecha, color cyan
-    fecha_hoy = fecha_español(get_local_now())
-    st.markdown(f"""
-    <div style="text-align:right; margin-bottom:0.5rem;">
-        <span style="color:#00d4d4; font-weight:700; font-size:0.95rem;">{fecha_hoy}</span>
-    </div>
-    """, unsafe_allow_html=True)
+    # ===== RELOJ EN VIVO (hora con segundos + fecha completa), alineado a la derecha =====
+    live_clock(TIMEZONE)
 
     # ==================== NEW LOG ====================
     if st.session_state.page == "new_log":
@@ -333,13 +374,24 @@ with main_col:
         <p style="color:#5a6b7d; margin-bottom:1.2rem; font-size:0.9rem;">Log a new guest request</p>
         """, unsafe_allow_html=True)
 
+        # Mensaje de éxito que sobrevive al reseteo del formulario
+        if st.session_state.just_saved:
+            st.balloons()
+            st.success("✅ Request saved! Form is clear and ready for a new entry.")
+            st.session_state.just_saved = False
+
         operators = get_operators()
         request_types = get_request_types()
 
+        # Fecha y hora del sistema como valores por defecto del formulario
         now_local = get_local_now()
         current_date = now_local.date()
         current_time = now_local.time()
-        time_str = now_local.strftime("%I:%M %p")
+
+        st.caption("⏰ When you save, the date & time are taken automatically from the system clock.")
+
+        # Versión actual del formulario (cambia tras cada guardado exitoso)
+        fv = st.session_state.form_version
 
         st.markdown("""
         <div style="background:#151c24; border:1px solid #1e2a38; border-radius:12px; padding:1.5rem 2rem;">
@@ -347,37 +399,32 @@ with main_col:
         </div>
         """, unsafe_allow_html=True)
 
-        st.markdown(f"""
-        <div style="display:flex; align-items:center; gap:6px; margin-bottom:0.8rem;">
-            <span style="color:#5a6b7d; font-size:0.85rem;">⏰ Current local time:</span>
-            <span style="color:#00d4d4; font-weight:700; font-size:0.9rem;">{time_str}</span>
-            <span style="color:#5a6b7d; font-size:0.75rem;">(auto-updates on Save)</span>
-        </div>
-        """, unsafe_allow_html=True)
-
         c1, c2 = st.columns(2)
         with c1:
-            d = st.date_input("Date", value=current_date, key="d1")
+            d = st.date_input("Date", value=current_date, key=f"d1_{fv}")
         with c2:
-            t = st.time_input("Time", value=current_time, key="t1")
+            t = st.time_input("Time", value=current_time, key=f"t1_{fv}")
 
         c3, c4 = st.columns(2)
         with c3:
-            room = st.text_input("Room #", placeholder="e.g. 538", key="r1")
+            room = st.text_input("Room #", placeholder="e.g. 538", key=f"r1_{fv}")
         with c4:
-            op = st.selectbox("Operator", options=operators, key="o1")
+            op = st.selectbox("Operator", options=operators, key=f"o1_{fv}")
 
-        rt = st.selectbox("Request Type", options=request_types, key="rt1")
-        notes = st.text_area("Notes (optional)", placeholder="Additional details...", height=100, key="n1")
+        rt = st.selectbox("Request Type", options=request_types, key=f"rt1_{fv}")
+        notes = st.text_area("Notes (optional)", placeholder="Additional details...", height=100, key=f"n1_{fv}")
 
         if st.button("Save Request", type="primary", use_container_width=True, key="save1"):
             if not room.strip():
                 st.error("⚠️ Please enter a room number.")
             else:
+                # Se guarda SIEMPRE con la fecha y hora exacta del sistema
                 save_now = get_local_now()
                 if save_request(save_now.date(), save_now.time(), room.strip(), op, rt, notes):
-                    st.success("✅ Saved!")
-                    st.balloons()
+                    # Limpiar el formulario: nueva versión de llaves => campos vacíos
+                    st.session_state.form_version += 1
+                    st.session_state.just_saved = True
+                    st.rerun()
                 else:
                     st.error("❌ Failed to save.")
 
