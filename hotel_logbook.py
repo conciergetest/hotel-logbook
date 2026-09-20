@@ -415,9 +415,7 @@ with main_col:
         fv = st.session_state.form_version
 
         st.markdown("""
-        <div style="background:#151c24; border:1px solid #1e2a38; border-radius:12px; padding:1.5rem 2rem;">
-            <h3 style="margin:0 0 1.2rem 0; font-size:1rem; color:#e8ecf1;">Request Details</h3>
-        </div>
+        <h3 style="margin:0.2rem 0 0.6rem 0; font-size:1.05rem; font-weight:700; color:#e8ecf1;">Request Details</h3>
         """, unsafe_allow_html=True)
 
         c1, c2 = st.columns(2)
