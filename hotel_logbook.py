@@ -79,7 +79,31 @@ def live_clock(timezone: str):
 # ============================================================
 st.markdown("""
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,600&display=swap');
+
 .stApp { background-color: #0b0f14; }
+
+/* ===== Marca central: Hecho por Fred Wayne ===== */
+.brand-footer { text-align: center; margin-top: 3rem; }
+.brand-name {
+    font-family: 'Playfair Display', 'Georgia', serif;
+    font-style: italic;
+    font-weight: 600;
+    font-size: 1.7rem;
+    color: #00d4d4;
+    text-shadow: 0 0 16px rgba(0,212,212,0.55);
+}
+.brand-dept {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: #00d4d4;
+    opacity: 0.9;
+    margin-top: 0.35rem;
+    text-shadow: 0 0 8px rgba(0,212,212,0.35);
+}
 
 /* ===== APROVECHAR EL ESPACIO SUPERIOR ===== */
 /* Oculta el header transparente de Streamlit (crea un hueco arriba) */
@@ -658,3 +682,11 @@ with main_col:
                         type="primary",
                         key="bexp"
                     )
+
+    # ===== Marca central (aparece al final del contenido, en el área central de la app) =====
+    st.markdown("""
+    <div class="brand-footer">
+        <div class="brand-name">Hecho por Fred Wayne</div>
+        <div class="brand-dept">Concierge Department</div>
+    </div>
+    """, unsafe_allow_html=True)
